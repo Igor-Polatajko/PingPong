@@ -52,14 +52,10 @@ document.addEventListener("DOMContentLoaded", function () {
 	let isPosInit = false;
 
 	let move = {
-		up: {
-			value : false},
-		down: {
-			value : false},
-		left: {
-			value : false},
-		right:{
-			value : false}
+		up: {value : false},
+		down: {value : false},
+		left: {value : false},
+		right:{value : false}
 	};
 
 	function randomInt(min, max){
@@ -79,32 +75,32 @@ document.addEventListener("DOMContentLoaded", function () {
 		
 		let notTouched = true;
 
-		if(ballPosY - ballConst <= upperFlipperY + flipperHeight && ballPosX - ballConst >= upperFlipperX && ballPosX + ballConst <= upperFlipperX + flipperWidth && priviousTouch != 'upper'){
+		if(ballPosY - ballConst <= upperFlipperY + flipperHeight && ballPosX + ballConst >= upperFlipperX && ballPosX - ballConst <= upperFlipperX + flipperWidth && priviousTouch != 'upper'){
 			ballAngle = - ballAngle;
 			score++;
 			priviousTouch = 'upper';
-			touched = false;
+			notTouched = false;
 		}
 
-		if(ballPosY + ballConst >= lowerFlipperY && ballPosX - ballConst >= lowerFlipperX && ballPosX &&  ballConst <= lowerFlipperX + flipperWidth && priviousTouch != 'lower'){
+		if(ballPosY + ballConst >= lowerFlipperY && ballPosX + ballConst >= lowerFlipperX && ballPosX - ballConst <= lowerFlipperX + flipperWidth && priviousTouch != 'lower'){
 			ballAngle = - ballAngle;
 			score++;
 			priviousTouch = 'lower';
-			touched = false;
+			notTouched = false;
 		}
 
-		if(ballPosX - ballConst <= leftFlipperX + flipperHeight && ballPosY - ballConst >= leftFlipperY && ballPosY + ballConst <= leftFlipperY + flipperWidth && priviousTouch != 'left'){
+		if(ballPosX - ballConst <= leftFlipperX + flipperHeight && ballPosY + ballConst >= leftFlipperY && ballPosY - ballConst <= leftFlipperY + flipperWidth && priviousTouch != 'left'){
 			ballAngle = 180 - ballAngle;
 			score++;
 			priviousTouch = 'left';
-			touched = false;
+			notTouched = false;
 		}
 
-		if(ballPosX + ballConst >= rightFlipperX && ballPosY - ballConst >= rightFlipperY && ballPosY + ballConst <= rightFlipperY + flipperWidth && priviousTouch != 'right'){
+		if(ballPosX + ballConst >= rightFlipperX && ballPosY +ballConst >= rightFlipperY && ballPosY - ballConst <= rightFlipperY + flipperWidth && priviousTouch != 'right'){
 			ballAngle = 180 - ballAngle;
 			score++;
 			priviousTouch = 'right';
-			touched = false;
+			notTouched = false;
 		}
 
 
@@ -134,7 +130,7 @@ document.addEventListener("DOMContentLoaded", function () {
 		ballPosX = gameFieldWidth  / 2;
 		ballPosY = topMargin +  gameFieldHeight / 2;
 
-		ballSpeed = 0;
+		ballSpeed = 3;
 		ballAngle = randomInt(0, 4) * 90 + randomInt(20, 70);
 
 		
