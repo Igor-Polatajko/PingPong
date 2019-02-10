@@ -23,6 +23,9 @@ document.addEventListener("DOMContentLoaded", function () {
 	    ballPosY,
 	    ballColor,
 	    ballRadius,
+	    ballSpeed,
+	    ballAngle,
+	    priviousTouch,
 
 	    flipperWidth,
 	    flipperHeight,
@@ -48,14 +51,67 @@ document.addEventListener("DOMContentLoaded", function () {
 
 	let isPosInit = false;
 
-	let buttonsPressed = [];
-
 	let move = {
-		up: false,
-		down: false,
-		left: false,
-		right: false
+		up: {
+			value : false},
+		down: {
+			value : false},
+		left: {
+			value : false},
+		right:{
+			value : false}
 	};
+
+	function randomInt(min, max){
+		return Math.floor(Math.random() * (max - min + 1)) + min;
+	}
+
+	function angleToRad(angle){
+		return Math.PI * angle / 180;
+	}
+
+	function newGame(){
+		isPosInit = false;
+	}
+
+	function checkCollisions(){
+		let ballConst = ballSpeed + ballRadius / 2 + strokeWidth / 2;
+		
+		let notTouched = true;
+
+		if(ballPosY - ballConst <= upperFlipperY + flipperHeight && ballPosX - ballConst >= upperFlipperX && ballPosX + ballConst <= upperFlipperX + flipperWidth && priviousTouch != 'upper'){
+			ballAngle = - ballAngle;
+			score++;
+			priviousTouch = 'upper';
+			touched = false;
+		}
+
+		if(ballPosY + ballConst >= lowerFlipperY && ballPosX - ballConst >= lowerFlipperX && ballPosX &&  ballConst <= lowerFlipperX + flipperWidth && priviousTouch != 'lower'){
+			ballAngle = - ballAngle;
+			score++;
+			priviousTouch = 'lower';
+			touched = false;
+		}
+
+		if(ballPosX - ballConst <= leftFlipperX + flipperHeight && ballPosY - ballConst >= leftFlipperY && ballPosY + ballConst <= leftFlipperY + flipperWidth && priviousTouch != 'left'){
+			ballAngle = 180 - ballAngle;
+			score++;
+			priviousTouch = 'left';
+			touched = false;
+		}
+
+		if(ballPosX + ballConst >= rightFlipperX && ballPosY - ballConst >= rightFlipperY && ballPosY + ballConst <= rightFlipperY + flipperWidth && priviousTouch != 'right'){
+			ballAngle = 180 - ballAngle;
+			score++;
+			priviousTouch = 'right';
+			touched = false;
+		}
+
+
+		if(notTouched && ballPosX - ballConst <= leftBorderX || ballPosX + ballConst >= rightBorderX  || ballPosY - ballConst <= upperBorderY || ballPosY + ballConst >= lowerBorderY){
+			newGame();
+		}
+	}
 
 	function initPos(){
 
@@ -75,14 +131,17 @@ document.addEventListener("DOMContentLoaded", function () {
 		
 		
 		ballRadius = 3 * ug;
+		ballPosX = gameFieldWidth  / 2;
+		ballPosY = topMargin +  gameFieldHeight / 2;
+
+		ballSpeed = 0;
+		ballAngle = randomInt(0, 4) * 90 + randomInt(20, 70);
 
 		
 		flipperHeight = 2 * ug;
 		flipperWidth = 15 * ug;
 
 
-		ballPosX = gameFieldWidth  / 2;
-		ballPosY = topMargin +  gameFieldHeight / 2;
 
 
 		upperFlipperX = gameFieldWidth / 2 - flipperWidth / 2;
@@ -115,7 +174,7 @@ document.addEventListener("DOMContentLoaded", function () {
 		}
 
 	function calcPos(){
-		if(move.up){
+		if(move.up.value){
 			if(leftFlipperY - flipperSpeed > upperBorderY){
 				leftFlipperY -= flipperSpeed;
 				rightFlipperY -= flipperSpeed;
@@ -125,9 +184,7 @@ document.addEventListener("DOMContentLoaded", function () {
 				rightFlipperY = upperBorderY;
 			}
 		}
-		
-
-		if(move.down){
+		if(move.down.value){
 			if(leftFlipperY + flipperSpeed < lowerBorderY - flipperWidth){
 				leftFlipperY += flipperSpeed;
 				rightFlipperY += flipperSpeed;
@@ -137,7 +194,7 @@ document.addEventListener("DOMContentLoaded", function () {
 				rightFlipperY = lowerBorderY - flipperWidth;
 			}
 		}
-		if(move.left){
+		if(move.left.value){
 			if(upperFlipperX - flipperSpeed > leftBorderX){
 				upperFlipperX -= flipperSpeed;
 				lowerFlipperX -= flipperSpeed;
@@ -147,7 +204,7 @@ document.addEventListener("DOMContentLoaded", function () {
 				lowerFlipperX = leftBorderX;
 			}
 		}
-		if(move.right){
+		if(move.right.value){
 			if(upperFlipperX + flipperSpeed < rightBorderX - flipperWidth){
 				upperFlipperX += flipperSpeed;
 				lowerFlipperX += flipperSpeed;
@@ -157,6 +214,10 @@ document.addEventListener("DOMContentLoaded", function () {
 				lowerFlipperX = rightBorderX - flipperWidth;
 			}
 		}
+
+
+		ballPosX += ballSpeed * Math.cos(angleToRad(ballAngle)); 
+		ballPosY += ballSpeed * Math.sin(angleToRad(ballAngle)); 
 	}
 
 	function calcStuff(){
@@ -165,15 +226,13 @@ document.addEventListener("DOMContentLoaded", function () {
 		}
 		else{
 			calcPos();
+			checkCollisions();
 		}
 	}
 
 	function draw(){
 
-		handleKeyPressed();
-
 		calcStuff();
-
 
 
 		canvas.width = canvasWidth;
@@ -212,45 +271,30 @@ document.addEventListener("DOMContentLoaded", function () {
 		ctx.fillRect(leftFlipperX, leftFlipperY, flipperHeight,  flipperWidth);
 		ctx.fillRect(rightFlipperX, rightFlipperY, flipperHeight, flipperWidth);
 
+		
+
 		requestAnimationFrame(draw);
 	}
 
-	function handleKeyPressed(){
-		move.up = false;
-		move.down = false;
-		move.left = false;
-		move.right = false;
+	function setKeyListeners(){
+		let keys = [['KeyW', move.up], ['KeyS', move.down], ['KeyA', move.left], ['KeyD', move.right]];
 
+		for(let i = 0; i < keys.length; i++){
+			document.addEventListener('keydown', function(e){
+				if(e.code == keys[i][0] && !keys[i][1].value){
+					keys[i][1].value = true;
+				}
 
-		for(let i = 0; i < buttonsPressed.length; i++){
-			switch(buttonsPressed[i]){
-				case 'KeyW':
-					move.up = true;
-					break;
-				case 'KeyS':
-					move.down = true;
-					break;
-				case 'KeyA':
-					move.left = true;
-					break;
-				case 'KeyD':
-					move.right = true;
-					break;	
-			}
-		}
+			});
+			document.addEventListener('keyup', function(e){
+				if(e.code == keys[i][0] && keys[i][1].value){
+					keys[i][1].value = false;
+				}
+			});
+		}	
 	}
 
-	document.addEventListener('keydown', function(e){
-		if(!buttonsPressed.includes(e.code)){
-			buttonsPressed.push(e.code);
-		}
-	});
-
-	document.addEventListener('keyup', function(e){
-		if(buttonsPressed.includes(e.code)){
-			buttonsPressed.pop(e.code);
-		}
-	});
+	setKeyListeners();
 
 	draw();
 });
