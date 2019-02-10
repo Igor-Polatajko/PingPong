@@ -8,9 +8,16 @@ document.addEventListener("DOMContentLoaded", function () {
 	    canvasWidth,
 	    canvasHeight,
 
+	    gameFieldWidth,
+	    gameFieldHeight,
+
+	    topMargin,
+
 	    uw, // unit width
 	    uh, // unit height
 	    ug, // general unit
+
+	    strokeWidth,
 
 	    ballPosX,
 	    ballPosY,
@@ -19,68 +26,231 @@ document.addEventListener("DOMContentLoaded", function () {
 
 	    flipperWidth,
 	    flipperHeight,
-	    flipperX,
-	    flipperY,
-	    flipperColor;
+	    upperFlipperX,
+	    upperFlipperY,
+	    lowerFlipperX,
+	    lowerFlipperY,
+	    leftFlipperX,
+	    leftFlipperY,
+	    rightFlipperX,
+	    rightFlipperY,
+	    flipperColor,
+	    flipperSpeed,
+
+	    leftBorderX,
+	    rightBorderX,
+	    upperBorderY,
+	    lowerBorderY,
+
+
+	    score,
+	    timeElapsed;
 
 	let isPosInit = false;
 
-	function initPos(){
-		ballPosX = canvasWidth / 2;
-		ballPosY = canvasHeight / 2;
-		flipperX = canvasWidth / 2 - flipperWidth / 2;
-		flipperY = canvasHeight / 2 - flipperWidth / 2;
-		isPosInit = true;
-	}
+	let buttonsPressed = [];
 
-	function calcStuff(){
+	let move = {
+		up: false,
+		down: false,
+		left: false,
+		right: false
+	};
+
+	function initPos(){
+
+
+		strokeWidth = 10;
 		canvasWidth = window.innerWidth * .7;
 		canvasHeight = window.innerHeight * .7;
 		uw = canvasWidth / 100;
 		uh = canvasHeight / 100;
 		ug = (uh < uw) ? uh : uw;
 
+		topMargin = 12 * ug;
+
+		gameFieldHeight = canvasHeight - topMargin  -  strokeWidth;
+		gameFieldWidth = canvasWidth -  2 * strokeWidth;
+
 		
-		ballColor = 'red';
+		
 		ballRadius = 3 * ug;
 
 		
 		flipperHeight = 2 * ug;
 		flipperWidth = 15 * ug;
+
+
+		ballPosX = gameFieldWidth  / 2;
+		ballPosY = topMargin +  gameFieldHeight / 2;
+
+
+		upperFlipperX = gameFieldWidth / 2 - flipperWidth / 2;
+		upperFlipperY = topMargin;
+
+		lowerFlipperX = upperFlipperX;
+		lowerFlipperY = topMargin + gameFieldHeight - flipperHeight;
+		
+		leftFlipperX = strokeWidth;
+		leftFlipperY = topMargin +  gameFieldHeight / 2 - flipperWidth / 2;
+
+		rightFlipperX = gameFieldWidth - flipperHeight;
+		rightFlipperY = leftFlipperY;
+
+		flipperSpeed = 10;
+
+		leftBorderX = strokeWidth;
+		rightBorderX = canvasWidth - leftBorderX - strokeWidth;
+		upperBorderY = topMargin;
+		lowerBorderY = topMargin - strokeWidth / 2 + gameFieldHeight;
+
+
+		
+		score = 0;
+		timeElapsed = 0;
+		ballColor = 'red';
 		flipperColor = 'Blue';
 
+		isPosInit = true;
+		}
+
+	function calcPos(){
+		if(move.up){
+			if(leftFlipperY - flipperSpeed > upperBorderY){
+				leftFlipperY -= flipperSpeed;
+				rightFlipperY -= flipperSpeed;
+			}
+			else{
+				leftFlipperY = upperBorderY;
+				rightFlipperY = upperBorderY;
+			}
+		}
+		
+
+		if(move.down){
+			if(leftFlipperY + flipperSpeed < lowerBorderY - flipperWidth){
+				leftFlipperY += flipperSpeed;
+				rightFlipperY += flipperSpeed;
+			}
+			else{
+				leftFlipperY = lowerBorderY - flipperWidth;
+				rightFlipperY = lowerBorderY - flipperWidth;
+			}
+		}
+		if(move.left){
+			if(upperFlipperX - flipperSpeed > leftBorderX){
+				upperFlipperX -= flipperSpeed;
+				lowerFlipperX -= flipperSpeed;
+			}
+			else{
+				upperFlipperX = leftBorderX;
+				lowerFlipperX = leftBorderX;
+			}
+		}
+		if(move.right){
+			if(upperFlipperX + flipperSpeed < rightBorderX - flipperWidth){
+				upperFlipperX += flipperSpeed;
+				lowerFlipperX += flipperSpeed;
+			}
+			else{
+				upperFlipperX = rightBorderX - flipperWidth;
+				lowerFlipperX = rightBorderX - flipperWidth;
+			}
+		}
+	}
+
+	function calcStuff(){
 		if(!isPosInit){
 			initPos();
+		}
+		else{
+			calcPos();
 		}
 	}
 
 	function draw(){
 
+		handleKeyPressed();
+
 		calcStuff();
+
+
 
 		canvas.width = canvasWidth;
 		canvas.height = canvasHeight;
 
 		// draw border
-		ctx.lineWidth = 5;
+		ctx.lineWidth = strokeWidth;
 		ctx.strokeStyle = 'Black';
-		ctx.strokeRect(0, 0, canvasWidth, canvasHeight);
+		ctx.strokeRect(leftBorderX - strokeWidth / 2, upperBorderY - strokeWidth / 2, gameFieldWidth, gameFieldHeight + strokeWidth);
+
+		// draw Score and timer
+
+		
+		ctx.textBaseline = "top";
+		ctx.font = '3vh Comic Sans MS';
+
+		ctx.textAlign = 'left';
+		ctx.fillText("Score: " + score, 25 * ug, 3 * ug);
+
+		ctx.textAlign = 'right';
+		ctx.fillText("Time elapsed: " + timeElapsed, gameFieldWidth - 25 * ug , 3 * ug);
 
 		// draw ball
 		ctx.fillStyle = ballColor;
 		ctx.arc(ballPosX, ballPosY, ballRadius , 0, 2 * Math.PI);
 		ctx.fill();
 
-		//draw flippers
+		// draw flippers
 		ctx.fillStyle = flipperColor;
 
-		ctx.fillRect(flipperX, 0, flipperWidth, flipperHeight);
-		ctx.fillRect(flipperX, canvasHeight - flipperHeight, flipperWidth, flipperHeight);
-		ctx.fillRect(0, flipperY, flipperHeight,  flipperWidth);
-		ctx.fillRect(canvasWidth - flipperHeight, flipperY, flipperHeight, flipperWidth);
+		// horizontal
+		ctx.fillRect(upperFlipperX, upperFlipperY, flipperWidth, flipperHeight);
+		ctx.fillRect(lowerFlipperX, lowerFlipperY, flipperWidth, flipperHeight);
+		
+		// vertical
+		ctx.fillRect(leftFlipperX, leftFlipperY, flipperHeight,  flipperWidth);
+		ctx.fillRect(rightFlipperX, rightFlipperY, flipperHeight, flipperWidth);
 
 		requestAnimationFrame(draw);
 	}
+
+	function handleKeyPressed(){
+		move.up = false;
+		move.down = false;
+		move.left = false;
+		move.right = false;
+
+
+		for(let i = 0; i < buttonsPressed.length; i++){
+			switch(buttonsPressed[i]){
+				case 'KeyW':
+					move.up = true;
+					break;
+				case 'KeyS':
+					move.down = true;
+					break;
+				case 'KeyA':
+					move.left = true;
+					break;
+				case 'KeyD':
+					move.right = true;
+					break;	
+			}
+		}
+	}
+
+	document.addEventListener('keydown', function(e){
+		if(!buttonsPressed.includes(e.code)){
+			buttonsPressed.push(e.code);
+		}
+	});
+
+	document.addEventListener('keyup', function(e){
+		if(buttonsPressed.includes(e.code)){
+			buttonsPressed.pop(e.code);
+		}
+	});
 
 	draw();
 });
