@@ -102,7 +102,7 @@ document.addEventListener("DOMContentLoaded", function () {
 		leftBorderX = strokeWidth;
 		rightBorderX = canvasWidth - leftBorderX - strokeWidth;
 		upperBorderY = topMargin;
-		lowerBorderY = topMargin - strokeWidth / 2 + gameFieldHeight;
+		lowerBorderY = topMargin + gameFieldHeight;
 
 
 		
