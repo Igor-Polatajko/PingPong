@@ -47,11 +47,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 	    score,
-	    timeElapsed;
+	    timeElapsed,
 
-	let isPosInit = false;
+	    inGame,
 
-	let move = {
+		isPosInit = false,
+
+	    move = {
 		up: {value : false},
 		down: {value : false},
 		left: {value : false},
@@ -163,11 +165,13 @@ document.addEventListener("DOMContentLoaded", function () {
 		
 		score = 0;
 		timeElapsed = 0;
+		timeElapsedString = '00:00:00';
 		ballColor = 'red';
 		flipperColor = 'Blue';
 
 		isPosInit = true;
-		}
+		inGame = true;
+	}
 
 	function calcPos(){
 		if(move.up.value){
@@ -240,8 +244,6 @@ document.addEventListener("DOMContentLoaded", function () {
 		ctx.strokeRect(leftBorderX - strokeWidth / 2, upperBorderY - strokeWidth / 2, gameFieldWidth, gameFieldHeight + strokeWidth);
 
 		// draw Score and timer
-
-		
 		ctx.textBaseline = "top";
 		ctx.font = '3vh Comic Sans MS';
 
@@ -249,7 +251,7 @@ document.addEventListener("DOMContentLoaded", function () {
 		ctx.fillText("Score: " + score, 25 * ug, 3 * ug);
 
 		ctx.textAlign = 'right';
-		ctx.fillText("Time elapsed: " + timeElapsed, gameFieldWidth - 25 * ug , 3 * ug);
+		ctx.fillText("Time elapsed: " + timeElapsedString, gameFieldWidth - 25 * ug , 3 * ug);
 
 		// draw ball
 		ctx.fillStyle = ballColor;
@@ -290,7 +292,26 @@ document.addEventListener("DOMContentLoaded", function () {
 		}	
 	}
 
+	function setTimerUpdate(){
+		setInterval(function(){
+			if(inGame){
+				timeElapsed++;
+
+				let seconds = timeElapsed;
+
+				let hours = Math.floor(seconds / 3600);
+				seconds %= 3600;
+				let minutes = Math.floor(seconds / 60);
+				seconds %= 60;
+
+				timeElapsedString = ('0' + hours).slice(-2) + ':' + ('0' + minutes).slice(-2) + ':' +  ('0' + seconds).slice(-2);
+			}
+		}, 1000);
+	}
+
 	setKeyListeners();
+
+	setTimerUpdate();
 
 	draw();
 });
