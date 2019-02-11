@@ -58,6 +58,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
 		isPosInit = false,
 
+		touchSound = new Audio('resources/touch.mp3'),
+		gameOverSound = new Audio('resources/gameOver.mp3'),
+
 	    move = {
 		up: {value : false},
 		down: {value : false},
@@ -75,7 +78,7 @@ document.addEventListener("DOMContentLoaded", function () {
 	}
 
 	function newGame(){
-		isPosInit = false;
+			isPosInit = false;
 	}
 
 	function levelUp(){
@@ -123,16 +126,17 @@ document.addEventListener("DOMContentLoaded", function () {
 		}
 
 		if(touched){
+			touchSound.play();
 			score++;
 			levelUp();
 		}
 		else if(ballPosX - ballConst <= leftBorderX || ballPosX + ballConst >= rightBorderX  || ballPosY - ballConst <= upperBorderY || ballPosY + ballConst >= lowerBorderY){
+			gameOverSound.play();
 			stopGameStates.gameOver = true;
 		}
 	}
 
 	function initPos(){
-
 
 		strokeWidth = 10;
 		canvasWidth = window.innerWidth * .7;
@@ -158,7 +162,6 @@ document.addEventListener("DOMContentLoaded", function () {
 		
 		flipperHeight = 2 * ug;
 		flipperWidth = 15 * ug;
-
 
 
 
@@ -247,8 +250,10 @@ document.addEventListener("DOMContentLoaded", function () {
 			initPos();
 		}
 		else{
-			calcPos();
-			checkCollisions();
+			if(!stopGameStates.gameOver && !stopGameStates.pause){
+				calcPos();
+				checkCollisions();
+			}
 		}
 	}
 
@@ -259,6 +264,10 @@ document.addEventListener("DOMContentLoaded", function () {
 		}
 		else{
 			inGame = true;
+		}
+
+		if(stopGameStates.gameOver){
+			stopGameStates.pause = false;
 		}
 	}
 	
