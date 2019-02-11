@@ -51,6 +51,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
 	    inGame,
 
+	    stopGameStates = {
+	    	pause : false,
+	    	gameOver : false
+	    }
+
 		isPosInit = false,
 
 	    move = {
@@ -58,7 +63,8 @@ document.addEventListener("DOMContentLoaded", function () {
 		down: {value : false},
 		left: {value : false},
 		right:{value : false}
-	};
+		};
+		
 
 	function randomInt(min, max){
 		return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -72,42 +78,56 @@ document.addEventListener("DOMContentLoaded", function () {
 		isPosInit = false;
 	}
 
+	function levelUp(){
+		if(ballSpeed <= 9){
+			ballSpeed += 0.1;
+		}
+
+		if(flipperWidth > 8 * ug){
+			flipperWidth -= .25 * ug;
+		}
+
+
+		if(flipperSpeed < ballSpeed * 2){
+			flipperSpeed = ballSpeed * 2;
+		}
+	}
+
 	function checkCollisions(){
 		let ballConst = ballSpeed + ballRadius / 2 + strokeWidth / 2;
 		
-		let notTouched = true;
+		let touched = false;
 
 		if(ballPosY - ballConst <= upperFlipperY + flipperHeight && ballPosX + ballConst >= upperFlipperX && ballPosX - ballConst <= upperFlipperX + flipperWidth && priviousTouch != 'upper'){
 			ballAngle = - ballAngle;
-			score++;
 			priviousTouch = 'upper';
-			notTouched = false;
+			touched = true;
 		}
 
 		if(ballPosY + ballConst >= lowerFlipperY && ballPosX + ballConst >= lowerFlipperX && ballPosX - ballConst <= lowerFlipperX + flipperWidth && priviousTouch != 'lower'){
 			ballAngle = - ballAngle;
-			score++;
 			priviousTouch = 'lower';
-			notTouched = false;
+			touched = true;
 		}
 
 		if(ballPosX - ballConst <= leftFlipperX + flipperHeight && ballPosY + ballConst >= leftFlipperY && ballPosY - ballConst <= leftFlipperY + flipperWidth && priviousTouch != 'left'){
 			ballAngle = 180 - ballAngle;
-			score++;
 			priviousTouch = 'left';
-			notTouched = false;
+			touched = true;
 		}
 
-		if(ballPosX + ballConst >= rightFlipperX && ballPosY +ballConst >= rightFlipperY && ballPosY - ballConst <= rightFlipperY + flipperWidth && priviousTouch != 'right'){
+		if(ballPosX + ballConst >= rightFlipperX && ballPosY + ballConst >= rightFlipperY && ballPosY - ballConst <= rightFlipperY + flipperWidth && priviousTouch != 'right'){
 			ballAngle = 180 - ballAngle;
-			score++;
 			priviousTouch = 'right';
-			notTouched = false;
+			touched = true;
 		}
 
-
-		if(notTouched && ballPosX - ballConst <= leftBorderX || ballPosX + ballConst >= rightBorderX  || ballPosY - ballConst <= upperBorderY || ballPosY + ballConst >= lowerBorderY){
-			newGame();
+		if(touched){
+			score++;
+			levelUp();
+		}
+		else if(ballPosX - ballConst <= leftBorderX || ballPosX + ballConst >= rightBorderX  || ballPosY - ballConst <= upperBorderY || ballPosY + ballConst >= lowerBorderY){
+			stopGameStates.gameOver = true;
 		}
 	}
 
@@ -174,50 +194,52 @@ document.addEventListener("DOMContentLoaded", function () {
 	}
 
 	function calcPos(){
-		if(move.up.value){
-			if(leftFlipperY - flipperSpeed > upperBorderY){
-				leftFlipperY -= flipperSpeed;
-				rightFlipperY -= flipperSpeed;
+		if(inGame){
+			if(move.up.value){
+				if(leftFlipperY - flipperSpeed > upperBorderY){
+					leftFlipperY -= flipperSpeed;
+					rightFlipperY -= flipperSpeed;
+				}
+				else{
+					leftFlipperY = upperBorderY;
+					rightFlipperY = upperBorderY;
+				}
 			}
-			else{
-				leftFlipperY = upperBorderY;
-				rightFlipperY = upperBorderY;
+			if(move.down.value){
+				if(leftFlipperY + flipperSpeed < lowerBorderY - flipperWidth){
+					leftFlipperY += flipperSpeed;
+					rightFlipperY += flipperSpeed;
+				}
+				else{
+					leftFlipperY = lowerBorderY - flipperWidth;
+					rightFlipperY = lowerBorderY - flipperWidth;
+				}
 			}
-		}
-		if(move.down.value){
-			if(leftFlipperY + flipperSpeed < lowerBorderY - flipperWidth){
-				leftFlipperY += flipperSpeed;
-				rightFlipperY += flipperSpeed;
+			if(move.left.value){
+				if(upperFlipperX - flipperSpeed > leftBorderX){
+					upperFlipperX -= flipperSpeed;
+					lowerFlipperX -= flipperSpeed;
+				}
+				else{
+					upperFlipperX = leftBorderX;
+					lowerFlipperX = leftBorderX;
+				}
 			}
-			else{
-				leftFlipperY = lowerBorderY - flipperWidth;
-				rightFlipperY = lowerBorderY - flipperWidth;
+			if(move.right.value){
+				if(upperFlipperX + flipperSpeed < rightBorderX - flipperWidth){
+					upperFlipperX += flipperSpeed;
+					lowerFlipperX += flipperSpeed;
+				}
+				else{
+					upperFlipperX = rightBorderX - flipperWidth;
+					lowerFlipperX = rightBorderX - flipperWidth;
+				}
 			}
-		}
-		if(move.left.value){
-			if(upperFlipperX - flipperSpeed > leftBorderX){
-				upperFlipperX -= flipperSpeed;
-				lowerFlipperX -= flipperSpeed;
-			}
-			else{
-				upperFlipperX = leftBorderX;
-				lowerFlipperX = leftBorderX;
-			}
-		}
-		if(move.right.value){
-			if(upperFlipperX + flipperSpeed < rightBorderX - flipperWidth){
-				upperFlipperX += flipperSpeed;
-				lowerFlipperX += flipperSpeed;
-			}
-			else{
-				upperFlipperX = rightBorderX - flipperWidth;
-				lowerFlipperX = rightBorderX - flipperWidth;
-			}
-		}
 
 
-		ballPosX += ballSpeed * Math.cos(angleToRad(ballAngle)); 
-		ballPosY += ballSpeed * Math.sin(angleToRad(ballAngle)); 
+			ballPosX += ballSpeed * Math.cos(angleToRad(ballAngle)); 
+			ballPosY += ballSpeed * Math.sin(angleToRad(ballAngle)); 
+		}
 	}
 
 	function calcStuff(){
@@ -230,8 +252,21 @@ document.addEventListener("DOMContentLoaded", function () {
 		}
 	}
 
+	
+	function checkInGame(){
+		if(stopGameStates.pause || stopGameStates.gameOver){
+			inGame = false;
+		}
+		else{
+			inGame = true;
+		}
+	}
+	
+
 	function draw(){
 
+		checkInGame();
+		
 		calcStuff();
 
 
@@ -243,10 +278,12 @@ document.addEventListener("DOMContentLoaded", function () {
 		ctx.strokeStyle = 'Black';
 		ctx.strokeRect(leftBorderX - strokeWidth / 2, upperBorderY - strokeWidth / 2, gameFieldWidth, gameFieldHeight + strokeWidth);
 
-		// draw Score and timer
+
 		ctx.textBaseline = "top";
 		ctx.font = '3vh Comic Sans MS';
 
+
+		// draw Score and timer
 		ctx.textAlign = 'left';
 		ctx.fillText("Score: " + score, 25 * ug, 3 * ug);
 
@@ -270,6 +307,25 @@ document.addEventListener("DOMContentLoaded", function () {
 		ctx.fillRect(rightFlipperX, rightFlipperY, flipperHeight, flipperWidth);
 
 		
+		// draw pause			
+		if(stopGameStates.pause){
+			ctx.font = '5vh Comic Sans MS';
+			ctx.fillStyle = 'Black';
+			ctx.textAlign = 'center';
+			ctx.fillText("Pause", gameFieldWidth / 2, topMargin + gameFieldHeight / 2);
+		}
+
+
+		// draw gameover
+		if(stopGameStates.gameOver){
+			ctx.font = '5vh Comic Sans MS';
+			ctx.fillStyle = 'Red';
+			ctx.textAlign = 'center';		
+			ctx.fillText("Game over", gameFieldWidth / 2, topMargin + gameFieldHeight / 2 - 5 * ug);
+			ctx.font = '2vh Comic Sans MS';
+			ctx.fillText("Press enter to play again!", gameFieldWidth / 2, topMargin + gameFieldHeight / 2  + 5 * ug);
+		}
+		
 
 		requestAnimationFrame(draw);
 	}
@@ -292,6 +348,42 @@ document.addEventListener("DOMContentLoaded", function () {
 		}	
 	}
 
+	function setWindowListeners(){
+		window.onfocus = function(){
+			if(!stopGameStates.gameOver){
+					stopGameStates.pause = false;
+			}
+		}
+		window.onblur = function(){
+			stopGameStates.pause = true;
+		}
+	}
+
+	function setKeyPressListener(){
+		let keys = [['Space', pressSpaceEvent],['Enter', pressEnterEvent]];
+
+		for(let i = 0; i < keys.length; i++){
+			document.addEventListener('keypress', function(e){
+				if(keys[i][0] == e.code){
+					keys[i][1]();
+				}
+			});
+		}
+
+		function pressSpaceEvent(){
+			if(!stopGameStates.gameOver){
+				stopGameStates.pause = !stopGameStates.pause;
+			}
+		}
+
+		function pressEnterEvent(){
+			if(stopGameStates.gameOver){
+				stopGameStates.gameOver = false;
+				newGame();
+			}
+		}
+	}
+
 	function setTimerUpdate(){
 		setInterval(function(){
 			if(inGame){
@@ -310,6 +402,10 @@ document.addEventListener("DOMContentLoaded", function () {
 	}
 
 	setKeyListeners();
+
+	setKeyPressListener();
+
+	setWindowListeners();
 
 	setTimerUpdate();
 
