@@ -340,18 +340,25 @@ document.addEventListener("DOMContentLoaded", function () {
 	}
 
 	function setKeyListeners(){
-		let keys = [['KeyW', move.up], ['KeyS', move.down], ['KeyA', move.left], ['KeyD', move.right]];
+		let keys = [['KeyW ArrowUp', move.up], ['KeyS ArrowDown', move.down], ['KeyA ArrowLeft', move.left], ['KeyD ArrowRight', move.right]];
 
 		for(let i = 0; i < keys.length; i++){
 			document.addEventListener('keydown', function(e){
-				if(e.code == keys[i][0] && !keys[i][1].value){
-					keys[i][1].value = true;
+				let keysCode = keys[i][0].split(' ');
+				for(let k = 0; k < keysCode.length; k++){
+					if(e.code == keysCode[k] && !keys[i][1].value){
+						keys[i][1].value = true;
+						break;
+					}
 				}
-
 			});
 			document.addEventListener('keyup', function(e){
-				if(e.code == keys[i][0] && keys[i][1].value){
-					keys[i][1].value = false;
+				let keysCode = keys[i][0].split(' ');
+				for(let k = 0; k < keysCode.length; k++){
+					if(e.code == keysCode[k] && keys[i][1].value){
+						keys[i][1].value = false;
+						break;
+					}
 				}
 			});
 		}	
